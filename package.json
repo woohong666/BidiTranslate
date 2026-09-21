@@ -1,0 +1,11 @@
+{
+  "name": "bidi-translate",
+  "version": "10.0.0",
+  "private": true,
+  "type": "module",
+  "description": "PopClip 双向翻译扩展（纯逻辑单测用）",
+  "scripts": {
+    "test": "node test/lib.test.js",
+    "load": "node test/load.js"
+  }
+}
