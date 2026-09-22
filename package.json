@@ -1,6 +1,6 @@
 {
   "name": "bidi-translate",
-  "version": "12.3.0",
+  "version": "12.4.0",
   "private": true,
   "type": "module",
   "description": "PopClip 双向翻译扩展（纯逻辑单测用）",

@@ -4,7 +4,7 @@
 
 直接调用任意 **OpenAI 兼容**接口，**不启动任何 App、不跳浏览器**；内置防提示词注入、反“翻译腔”提示词，追求自然、像人工的译文。
 
-> 个人自用项目（当前 **v12.3**）。纯 JavaScript 扩展，逻辑分在 `Config.js`（PopClip 入口）与 `lib.js`（纯逻辑，供单测共用），无第三方依赖（HTTP 用 PopClip 内置的 axios）。
+> 个人自用项目（当前 **v12.4**）。纯 JavaScript 扩展，逻辑分在 `Config.js`（PopClip 入口）与 `lib.js`（纯逻辑，供单测共用），无第三方依赖（HTTP 用 PopClip 内置的 axios）。
 
 ---
 
@@ -87,6 +87,8 @@ rm -f BidiTranslate.popclipextz && zip -r -X BidiTranslate.popclipextz BidiTrans
 | 对比：第二个模型 | 「模型对比」里要对比的模型，如 `deepseek-v4-pro` | 空 |
 | 额外请求参数 (JSON) | 高级：合并进请求体 | 空 |
 
+> **模型选择**：设置里的「模型」是下拉菜单。选“None”= 用当前预设的默认模型；列表里没有的选“Other…”手动填写。若所选模型属于别的预设（例如预设选了通义却留着 `deepseek-flash`），会自动改用当前预设的默认模型；用了自定义 Base URL 或“自定义”预设时不做这个判断。
+
 ### 接口预设与 Base URL
 
 | 预设 | Base URL（OpenAI 兼容） | 默认模型 |
@@ -95,7 +97,7 @@ rm -f BidiTranslate.popclipextz && zip -r -X BidiTranslate.popclipextz BidiTrans
 | 通义 Qwen | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
 | 智谱 GLM | `https://open.bigmodel.cn/api/paas/v4` | `glm-4.5-flash` |
 | Kimi | `https://api.moonshot.cn/v1` | `kimi-k2.6` |
-| StepFun | `https://api.stepfun.com/step_plan/v1` | `step-3.7-flash` |
+| StepFun | `https://api.stepfun.com/v1` | `step-3.7-flash` |
 | OpenAI | `https://api.openai.com/v1` | `gpt-4.1-mini` |
 
 > DeepSeek 官方文档：V4 Flash/Pro 的**思考模式默认开启且 effort=high**，因此本扩展默认帮你关掉，否则每次翻译都会先输出大段思考内容，又慢又费。要更高质量时，把模型换成 `deepseek-v4-pro`。
@@ -176,6 +178,7 @@ npm run build   # 打包生成 BidiTranslate.popclipextz
 
 ## 更新日志
 
+- **v12.4**：修正 StepFun 默认地址为标准的 `https://api.stepfun.com/v1`（原 `/step_plan/v1` 仅适用于 Step Plan 订阅）；README 补充「模型选择」说明。
 - **v12.3**：补齐 `popclipVersion: 6221`（子菜单 / `$` 命令需 2026.8.1+）、模型下拉新增 `deepseek-chat` / `deepseek-reasoner` / `qwen-turbo`、`model` 与 `model2` 显式 `defaultValue: ""`、「模型对比」新增“两个模型相同”的拦截提示；版本号全线统一（`package.json` / README）；新增 `npm run build` 打包脚本（自动排除 `.DS_Store`）。
 - **v12.2**：合并定稿——新增 `modelFits()`（选了别家模型时自动回退到当前预设默认模型）、模型下拉改用 `allowNone`、更全的越南语/法语识别、朗读译文按 VOICE 判断目标语音；单测增至 93 项。
 - **v12.1**：模型下拉（`allowOther` 可手填）、目标语言可自由填写（如 Traditional Chinese/Cantonese）、新增「译成…」子菜单、朗读语速、学习卡方向自动翻转；**修复 `restorePasteboard` 拼写错误**、删除未使用的 `HAN`。

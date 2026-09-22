@@ -1,4 +1,4 @@
-双向翻译 (Bidi Translate) — PopClip 扩展  v12.3
+双向翻译 (Bidi Translate) — PopClip 扩展  v12.4
 ===============================================
 
 主栏按钮
@@ -60,7 +60,7 @@
 - 通义(中国):  https://dashscope.aliyuncs.com/compatible-mode/v1
 - 智谱:       https://open.bigmodel.cn/api/paas/v4
 - Kimi:       https://api.moonshot.cn/v1
-- StepFun:    https://api.stepfun.com/step_plan/v1
+- StepFun:    https://api.stepfun.com/v1（Step Plan 订阅用 /step_plan/v1）
 - OpenAI:     https://api.openai.com/v1
 
 按 App 禁用

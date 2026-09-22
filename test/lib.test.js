@@ -121,6 +121,11 @@ t("自定义 baseurl 视为自定义", () => {
 });
 t("baseurl 与预设相同不算自定义", () => assert.equal(provider1({ preset: "deepseek", baseurl: "https://api.deepseek.com/" }).usingCustomBase, false));
 t("未知预设回退 deepseek", () => assert.equal(provider1({ preset: "nope" }).presetName, "deepseek"));
+t("StepFun 用标准端点 /v1", () => {
+  const p = provider1({ preset: "stepfun", apikey: "k" });
+  assert.equal(p.base, "https://api.stepfun.com/v1");
+  assert.equal(p.model, "step-3.7-flash");
+});
 
 console.log("\nprovider2");
 t("same 且无 model2 -> 空模型（触发提示）", () => assert.equal(provider2({ preset: "deepseek", apikey: "k" }).model, ""));

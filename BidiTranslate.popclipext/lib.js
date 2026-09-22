@@ -6,7 +6,7 @@ export const PRESETS = {
   qwen:     { baseurl: "https://dashscope.aliyuncs.com/compatible-mode/v1", model: "qwen-plus" },
   zhipu:    { baseurl: "https://open.bigmodel.cn/api/paas/v4", model: "glm-4.5-flash" },
   kimi:     { baseurl: "https://api.moonshot.cn/v1", model: "kimi-k2.6" },
-  stepfun:  { baseurl: "https://api.stepfun.com/step_plan/v1", model: "step-3.7-flash" },
+  stepfun:  { baseurl: "https://api.stepfun.com/v1", model: "step-3.7-flash" }, // 标准端点；Step Plan 订阅需改成 https://api.stepfun.com/step_plan/v1
   openai:   { baseurl: "https://api.openai.com/v1", model: "gpt-4.1-mini" },
   custom:   { baseurl: "", model: "" },
 };
