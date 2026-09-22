@@ -1,11 +1,12 @@
 {
   "name": "bidi-translate",
-  "version": "10.0.0",
+  "version": "12.3.0",
   "private": true,
   "type": "module",
   "description": "PopClip 双向翻译扩展（纯逻辑单测用）",
   "scripts": {
     "test": "node test/lib.test.js",
-    "load": "node test/load.js"
+    "load": "node test/load.js",
+    "build": "rm -f BidiTranslate.popclipextz && zip -r -X BidiTranslate.popclipextz BidiTranslate.popclipext -x '*.DS_Store'"
   }
 }

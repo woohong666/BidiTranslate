@@ -4,7 +4,7 @@
 
 直接调用任意 **OpenAI 兼容**接口，**不启动任何 App、不跳浏览器**；内置防提示词注入、反“翻译腔”提示词，追求自然、像人工的译文。
 
-> 个人自用项目。单文件 JavaScript 扩展，无第三方依赖（HTTP 用 PopClip 内置的 axios）。
+> 个人自用项目（当前 **v12.3**）。纯 JavaScript 扩展，逻辑分在 `Config.js`（PopClip 入口）与 `lib.js`（纯逻辑，供单测共用），无第三方依赖（HTTP 用 PopClip 内置的 axios）。
 
 ---
 
@@ -51,10 +51,16 @@
 
 ### 从源码构建
 
-扩展就是一个目录 `BidiTranslate.popclipext/`（内含 `Config.js`）。打包：
+扩展就是一个目录 `BidiTranslate.popclipext/`（内含 `Config.js`、`lib.js`、`README.txt`）。打包（自动排除 `.DS_Store`）：
 
 ```bash
-zip -r -X BidiTranslate.popclipextz BidiTranslate.popclipext
+npm run build
+```
+
+等价于：
+
+```bash
+rm -f BidiTranslate.popclipextz && zip -r -X BidiTranslate.popclipextz BidiTranslate.popclipext -x '*.DS_Store'
 ```
 
 ## 配置
@@ -150,6 +156,7 @@ BidiTranslate/
 ```bash
 npm test        # 纯逻辑单测（无需 PopClip / 网络）
 npm run load    # 用 PopClip 自带的 JS 环境加载 Config.js，校验语法与模块解析
+npm run build   # 打包生成 BidiTranslate.popclipextz
 ```
 
 > 本仓库约定：先本地测试 → 生成 `.popclipextz` 人工验证 → 确认后才 `git commit && git push`。
@@ -169,6 +176,7 @@ npm run load    # 用 PopClip 自带的 JS 环境加载 Config.js，校验语法
 
 ## 更新日志
 
+- **v12.3**：补齐 `popclipVersion: 6221`（子菜单 / `$` 命令需 2026.8.1+）、模型下拉新增 `deepseek-chat` / `deepseek-reasoner` / `qwen-turbo`、`model` 与 `model2` 显式 `defaultValue: ""`、「模型对比」新增“两个模型相同”的拦截提示；版本号全线统一（`package.json` / README）；新增 `npm run build` 打包脚本（自动排除 `.DS_Store`）。
 - **v12.2**：合并定稿——新增 `modelFits()`（选了别家模型时自动回退到当前预设默认模型）、模型下拉改用 `allowNone`、更全的越南语/法语识别、朗读译文按 VOICE 判断目标语音；单测增至 93 项。
 - **v12.1**：模型下拉（`allowOther` 可手填）、目标语言可自由填写（如 Traditional Chinese/Cantonese）、新增「译成…」子菜单、朗读语速、学习卡方向自动翻转；**修复 `restorePasteboard` 拼写错误**、删除未使用的 `HAN`。
 - **v11.1**：合并 v11 的改进——朗读改用 `$` shell（免自动化授权）、新增 `detectSourceKey` 按语言选朗读语音、命名风格改用专用提示词、`toWords` 修正缩写边界、`provider2` 跨厂商不再复用第一个 Key（必须填第二个）；修复「同一预设 + 自定义代理」被误判为跨厂商；补齐单元测试（68 项）。

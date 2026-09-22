@@ -3,6 +3,7 @@
 // identifier: com.woohong.popclip.bidi-translate
 // icon: symbol:character.book.closed
 // entitlements: [network, script]
+// popclipVersion: 6221
 // description: 多语言翻译：自动识别源语言，中文↔英文，其它语言译成中文，也可指定目标语言。支持朗读、双语对照、学习卡、命名风格、模型对比与自定义 AI 动作。
 
 import axios from "axios";
@@ -25,7 +26,7 @@ const options = [
     defaultValue: "deepseek" },
   { identifier: "apikey", type: "secret", label: "API Key", description: "密钥保存在 macOS 钥匙串。" },
   { identifier: "model", type: "multiple", label: "模型", allowNone: true, allowOther: true,
-    values: MODEL_VALUES, valueLabels: MODEL_LABELS,
+    values: MODEL_VALUES, valueLabels: MODEL_LABELS, defaultValue: "",
     description: "选“None”= 用当前接口预设的默认模型（推荐）。列表里没有的模型，选“Other…”手动填写。若所选模型属于别的预设，会自动改用当前预设的默认模型。" },
   { identifier: "baseurl", type: "string", label: "自定义 Base URL（可选）", description: "仅当「接口预设」选“自定义”时填。填了与预设不同的地址就按自定义处理，不注入关闭思考的参数。" },
   { identifier: "target", type: "multiple", label: "目标语言", allowOther: true,
@@ -56,7 +57,7 @@ const options = [
     defaultValue: "same" },
   { identifier: "apikey2", type: "secret", label: "对比：第二个 API Key（可选）", description: "当第二个预设与当前不同、且密钥不同时才需要。" },
   { identifier: "model2", type: "multiple", label: "对比：第二个模型", allowNone: true, allowOther: true,
-    values: MODEL_VALUES, valueLabels: MODEL_LABELS,
+    values: MODEL_VALUES, valueLabels: MODEL_LABELS, defaultValue: "",
     description: "“模型对比”里要对比的另一个模型。同一厂商必须选一个与当前不同的；跨厂商时选“None”则用第二个预设的默认模型。" },
   { identifier: "extrabody", type: "string", multiline: true, label: "额外请求参数 (JSON，可选)", description: '高级用法，合并进请求体。一般留空。例如 Qwen 关思考：\n{"enable_thinking": false}' },
 ];
@@ -148,6 +149,9 @@ async function compare(text, options) {
   const p1 = provider1(options), p2 = provider2(options);
   if (!p1.key) throw popclip.settingsRequiredError();
   if (!p2.model) { popclip.showText("请先在设置里填写“对比：第二个模型”"); return null; }
+  if (p2.base === p1.base && p2.model === p1.model) {
+    popclip.showText("“对比：第二个模型”和当前模型一样，请在设置里另选一个"); return null;
+  }
   if (!p2.key) { popclip.showText("对比的第二个预设与当前不同，请填写“对比：第二个 API Key”"); return null; }
   if (!HAS_LETTER.test(text)) return text;
   const tk = targetKeyOf(options);

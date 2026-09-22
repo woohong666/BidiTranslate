@@ -25,7 +25,10 @@ export function thinkOffFor(model) {
 export const MODELS = [
   ["deepseek", "deepseek-flash",   "DeepSeek · deepseek-flash（V4.1 Flash，推荐）"],
   ["deepseek", "deepseek-v4-pro",  "DeepSeek · deepseek-v4-pro（质量优先）"],
+  ["deepseek", "deepseek-chat",    "DeepSeek · deepseek-chat"],
+  ["deepseek", "deepseek-reasoner", "DeepSeek · deepseek-reasoner（推理）"],
   ["qwen",     "qwen-plus",        "通义 · qwen-plus"],
+  ["qwen",     "qwen-turbo",       "通义 · qwen-turbo（便宜快）"],
   ["qwen",     "qwen-max",         "通义 · qwen-max"],
   ["zhipu",    "glm-4.5-flash",    "智谱 · glm-4.5-flash"],
   ["zhipu",    "glm-4.5-air",      "智谱 · glm-4.5-air"],
