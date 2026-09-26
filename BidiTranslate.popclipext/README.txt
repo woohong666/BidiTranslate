@@ -1,58 +1,99 @@
-双向翻译 (Bidi Translate) — PopClip 扩展  v12.4
+双向翻译 (Bidi Translate) — PopClip 扩展 v15.0
 ===============================================
+
+这一版在 v14.0 基础上增加：SSE 流式显示、OpenCode Go 的 Responses / Anthropic Messages 协议支持，以及协议自动识别和手动覆盖。
+保留原有设置；模型选项通过 PopClip 的 migrateFrom 迁移已有非空选择。旧版空模型选项升级后显示 DeepSeek V4.1 Flash。
 
 主栏按钮
 --------
-1. 翻译        由 PopClip 的 preview-result 处理：完整译文写入剪贴板，
-               弹窗预览最多显示 160 字符，点预览即粘贴（不改原文）。
-2. 翻译并替换  直接把译文替换掉选中原文（仅可输入处出现）。
-               替换后自动恢复你原来的剪贴板内容。
-3. 备选译法    给 2/3/4 个译法；复制到剪贴板 + 全屏大字显示。
-4. 更多 ▸      子菜单：
-   - 朗读原文 / 朗读译文（macOS 内置 say；朗读时点击转圈可停止）
-   - 译成…      一次性按指定目标语言翻译（不改设置里的“目标语言”）
-   - 双语对照（译文 + 原文，大字完整显示）
-   - 语言学习卡（译文 + 生词/音标/例句 + 用法）
-   - 命名风格 ▸ camelCase / PascalCase / snake_case / kebab-case（直接替换选中文字）
-   - 模型对比（两个模型并排对照；跨厂商必须单独填第二个 Key，不会复用第一个）
-   - 自定义动作（用设置里的提示词做润色/解释/总结等）
+1. 翻译
+   主栏唯一的翻译入口，按设置里的“目标语言”翻译。自动模式：中文 -> English，其它语言 -> 简体中文。
+   结果进入剪贴板并预览；点预览可粘贴。
 
-多语言
-------
-源语言自动识别，目标语言在设置里选：
-- 自动（默认）：中文 -> 英文；其它语言（日/韩/俄/法/德/西…）-> 中文。
-- 也可固定：中文 / English / 日本語 / 한국어 / Русский / Français / Deutsch /
-  Español / Português / Italiano / العربية / ไทย / Tiếng Việt。
-- 目标语言支持“其它…”自由输入语言名（如 Traditional Chinese、Cantonese、Latin），
-  会原样传给提示词。临时翻译也可以用“更多 ▸ 译成…”选一次目标语言。
+2. 翻译并替换
+   仅在支持 Paste 的输入处显示；直接把译文替换选中文字，并恢复原剪贴板。
 
-关闭思考模式（默认开）
-----------------------
-仅当“模型名”明确支持时才注入参数，避免旧模型/别家报 400：
-- deepseek-flash / deepseek-v4* / deepseek-v3.2*  -> thinking = {"type":"disabled"}
-- glm-4.5 ~ glm-5*                               -> thinking = {"type":"disabled"}
-- qwen3*                                          -> enable_thinking = false
-- 其它：不注入
-另外：填了与预设不同的“自定义 Base URL”时，按自定义处理，不注入该参数。
+3. 备选译法
+   按设置生成 2/3/4 个不同表达，复制到剪贴板并大字显示。
 
-朗读
-----
-- 语音留空按语言自动选（中文 Tingting、英文 Samantha、日 Kyoko、韩 Yuna、俄 Milena、
-  法 Thomas、德 Anna、西 Monica、葡 Luciana…）；拉丁字母语言按特征字母粗分，不准也无妨。
-- 也可填系统里的其它语音名（如 Meijia、Daniel）。
-- “朗读语速”可填每分钟字数（约 120 慢 ～ 220 快），留空用系统默认（约 175）。
-- 朗读期间 PopClip 显示转圈，点击转圈即停止。
+4. 更多 ▸
+   - 朗读原文 / 朗读译文：macOS say，点击 PopClip 转圈可停止。
+   - 译成…：一次性指定目标语言，不改变设置。
+   - 双语对照：译文 + 原文，大字显示。
+   - 语言学习卡：中英翻译 + 生词/音标/例句/用法。
+   - 命名风格：camelCase / PascalCase / snake_case / kebab-case，仅在支持 Paste 时显示。
+    - 模型对比：两个模型并行翻译，并显示耗时；接口返回 usage 时同时显示 token 数。
+    - Go 模型目录：读取 OpenCode Go 的实时模型 ID，方便手动填写新模型。
+    - 自定义动作：使用设置里的提示词完成润色、解释、总结等。
 
-配置要点
+模型与思考模式
+--------------
+模型列表采用“已知模型表 + Other…”设计。未知模型仍可手填，不会因为模型名不在列表里被拦截。升级兼容：旧版保存的 deepseek-chat、deepseek-reasoner、deepseek-v4-flash 等会自动迁移到 deepseek-flash。
+
+DeepSeek 当前默认明确选中 V4.1 Flash，API 模型名为 deepseek-flash。DeepSeek 官方在 2026-09-10 发布 V4.1-Flash；旧 deepseek-chat / deepseek-reasoner 已不再作为推荐模型名。
+截至本版，deepseek-v4-pro 仍保留为兼容入口，但不要把它理解为独立于 Flash 的第二个“质量优先”选项；官方近期说明该入口存在路由调整。
+
+思考模式现在由 lib.js 的模型能力规则集中处理：
+- DeepSeek：thinking = {type:"disabled"}
+- GLM-5.3 / GLM-5.3 Flash：thinking = {type:"enabled"}, reasoning_effort = "low"（官方不允许关闭）
+- 其它支持关闭的 GLM：thinking = {type:"disabled"}
+- Qwen3：enable_thinking = false
+- 未知模型：不主动注入思考参数，减少 400 风险
+
+注意：如果填写了不同于预设的自定义 Base URL / 代理，本扩展视为自定义接口，不主动注入关闭思考参数。
+
+备用接口与重试
+--------------
+在设置中打开“主接口失败时使用备用接口”后，翻译、学习卡、命名风格和自定义动作遇到限流、超时或 5xx 时，会使用“第二个预设 / 模型”重试。
+第二个接口必须有有效 API Key，且不能与主接口使用完全相同的地址和模型；该功能默认关闭，避免用户不知情地产生第二次用量。
+每次请求遇到 408、429、5xx 或网络超时会自动重试一次；401/403、400 等配置或参数错误不会重试。
+
+流式显示
 --------
-- 接口预设：默认 DeepSeek（模型 deepseek-flash，另有 deepseek-v4-pro）。
-- 模型：下拉选常用模型；列表里没有的选“Other…”手填；选“None”用预设默认模型。
-  若所选模型属于别的预设（例如预设选了通义却留着 deepseek-flash），会自动改用
-  当前预设的默认模型；用了自定义 Base URL 或“自定义”预设时不做这个判断。
-- API Key：对应平台密钥（存 macOS 钥匙串）。
-- 模型对比：在“对比：第二个模型”里另选一个模型；跨厂商再填第二个预设与 Key。
-  同厂商时沿用第一个的地址和密钥（包括自定义 Base URL），只换模型。
-- 自定义动作：填“自定义动作提示词”。
+默认打开“流式显示结果”。Chat Completions、Responses 和 Anthropic Messages 的 SSE 内容会逐步更新 PopClip 预览；完整结果返回后才执行复制或粘贴。
+如果代理不支持 `stream=true`，扩展会自动改用普通完整响应。模型对比固定使用普通响应，避免两个模型同时刷新同一个预览。
+
+OpenCode Go（实验性）
+---------------------
+在“接口预设”选择 OpenCode Go，并在 API Key 中填写 OpenCode Console 创建的 Go Key。默认地址为 https://opencode.ai/zen/go/v1。
+此适配会发送 Bearer Key、User-Agent `BidiTranslate-PopClip/15.0` 和每次翻译独立的 `x-opencode-session`。
+
+下拉列表基于 2026-09-25 官方目录，现已支持三类协议：DeepSeek / GLM / Kimi / MiMo 等 `/chat/completions`；GPT、Grok、Muse Spark 的 `/responses`；Qwen、MiniMax 的 Anthropic `/messages`。
+“OpenCode Go 协议”默认自动识别；使用 Other…填写新模型时，可手动选择 Chat Completions、Responses 或 Anthropic Messages。PopClip 设置列表仍是静态目录，可用“Go 模型目录”查看实时 ID。
+
+注意：OpenCode Go 官方主要面向编程代理流量，翻译使用属于实验场景，不保证可用；请求可能受套餐额度、服务端策略及模型目录变化影响。选中的文本会发送给 OpenCode Go，模型的数据保留政策因模型而异，详见官方文档。
+
+响应延迟
+--------
+DeepSeek 官方 API 默认开启思考模式；本扩展默认勾选“关闭思考模式”，使用默认 DeepSeek 地址和模型时会发送 thinking={type:"disabled"}。GLM-5.3 / Flash 是例外：官方不支持关闭思考，扩展会自动改用 low effort。
+如果取消勾选，或填写自定义 Base URL / 代理，服务端可能仍开启思考。
+流式开启时会先显示逐步生成的预览，复制或粘贴仍要等完整译文返回；关闭流式或服务端不支持时，PopClip 会等完整译文后显示。网络、服务端排队、文本长度和译文长度也会影响等待时间，因此延迟不一定是思考造成的。
+
+语言检测 / 朗读
+----------------
+自动翻译由模型判断原文语言；朗读语音仍使用“文字系统 + 常见词/特征字符”的轻量启发式。
+检测之前会忽略 URL、邮箱和代码片段，减少混合文本误判。纯汉字可能同时是中文或日文，学习卡在这种情况下会交给模型判断。
+
+超长文本保护
+------------
+默认每次 API 请求最多 24000 个 Unicode 字符，打开“长文本自动分段翻译”后，超出部分会按段顺序翻译并合并，可能产生多次请求。
+备选译法、模型对比、学习卡和命名风格不自动分段；填写 0 表示不限制且不触发分段。这个值不是任何厂商的 API 上限，只是本扩展的 UX 安全阈值。
+
+额外请求参数
+------------
+“额外请求参数 (JSON)”可以加入 top_p、max_tokens、max_output_tokens、reasoning_effort 等高级参数。
+为避免把基础请求结构破坏掉，不能覆盖：model、messages、stream、input、instructions、system。
+
+模型对比
+--------
+- 第二个预设为“与当前相同”时，沿用当前地址和 Key，只换第二模型。
+- 跨厂商时必须提供第二个 API Key；不会复用第一厂商的 Key。
+- 结果示例：
+  ① deepseek-flash · 1.24s · 83 tok
+  ……
+
+  ② qwen-plus · 1.51s · 91 tok
+  ……
 
 各平台 Base URL（OpenAI 兼容）
 ------------------------------
@@ -60,13 +101,26 @@
 - 通义(中国):  https://dashscope.aliyuncs.com/compatible-mode/v1
 - 智谱:       https://open.bigmodel.cn/api/paas/v4
 - Kimi:       https://api.moonshot.cn/v1
-- StepFun:    https://api.stepfun.com/v1（Step Plan 订阅用 /step_plan/v1）
+- StepFun:    https://api.stepfun.com/v1
 - OpenAI:     https://api.openai.com/v1
+- OpenCode Go: https://opencode.ai/zen/go/v1
 
 按 App 禁用
 -----------
 编辑 Config.js 里的 const excludedApps = []; 填入 bundle id。
-数组留空时不会传给 PopClip，因此不会报错。
+数组留空时不会传给 PopClip。
 
-注意：需要 PopClip 2026.8.1 或更新版本（用到了子菜单与 $ 命令标签）；
-含 network/script 权限，首次安装会出现“未签名扩展”提示，属正常。
+兼容性
+------
+需要 PopClip 2026.8.1 或更新版本（使用子菜单、JavaScript $ 命令与当前 option/action API）。
+含 network/script 权限。
+
+官方参考
+--------
+PopClip Actions: https://www.popclip.app/dev/actions
+PopClip Options: https://www.popclip.app/dev/options
+DeepSeek API 更新日志: https://api-docs.deepseek.com/zh-cn/updates/
+DeepSeek 模型与价格: https://api-docs.deepseek.com/zh-cn/quick_start/pricing/
+DeepSeek 思考模式: https://api-docs.deepseek.com/guides/thinking_mode
+OpenCode Go: https://opencode.ai/v2/docs/console/go
+GLM 思考模式: https://docs.z.ai/guides/capabilities/thinking

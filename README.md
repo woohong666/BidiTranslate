@@ -1,97 +1,58 @@
 # 双向翻译 · Bidi Translate
 
-一个 macOS [PopClip](https://pilotmoon.com/popclip/) 扩展：划词即翻译，**自动识别源语言**，中文 ↔ 英文，其它语言（日 / 韩 / 俄 / 法 / 德 …）译成中文，也可指定任意目标语言。
+一个 macOS [PopClip](https://pilotmoon.com/popclip/) 扩展：选中文字即可翻译。默认使用 DeepSeek 官方 `deepseek-flash`，当前对应 DeepSeek V4.1 Flash；也支持多家 OpenAI 兼容接口和实验性的 OpenCode Go 多协议模型。
 
-直接调用任意 **OpenAI 兼容**接口，**不启动任何 App、不跳浏览器**；内置防提示词注入、反“翻译腔”提示词，追求自然、像人工的译文。
-
-> 个人自用项目（当前 **v12.4**）。纯 JavaScript 扩展，逻辑分在 `Config.js`（PopClip 入口）与 `lib.js`（纯逻辑，供单测共用），无第三方依赖（HTTP 用 PopClip 内置的 axios）。
-
----
+> 当前版本：**v15.0**。需要 PopClip 2026.8.1（build 6221）或更高版本。
 
 ## 功能
 
-主栏三个按钮 + 「更多」子菜单：
+### 主栏
 
 | 按钮 | 行为 |
 | --- | --- |
-| **翻译** | 弹窗预览译文（完整结果已进剪贴板，点击预览即粘贴，不改原文） |
-| **翻译并替换** | 直接把译文替换掉选中原文（仅在可输入处出现） |
-| **备选译法** | 给 2 / 3 / 4 个不同译法，编号列出；复制到剪贴板 + 全屏大字显示 |
-| **更多 ▸** | 见下 |
+| **翻译** | 自动判断方向，结果流式预览；完整译文进入剪贴板，点击预览可粘贴 |
+| **翻译并替换** | 在支持 Paste 的输入框中直接替换选中文字，并恢复原剪贴板 |
+| **备选译法** | 生成 2 / 3 / 4 个不同表达，复制并用全屏大字显示 |
 
-「更多」子菜单：
+### 更多
 
-| 功能 | 说明 |
-| --- | --- |
-| 朗读原文 | 用 macOS 内置语音朗读选中的原文 |
-| 朗读译文 | 先翻译，再朗读译文（按目标语言自动选语音） |
-| 译成… ▸ | 临时按指定语言翻译，不改设置里的「目标语言」 |
-| 双语对照 | 输出「译文 + 原文」 |
-| 语言学习卡 | 译文 + 生词（音标/词性/释义）+ 例句 + 用法提示 |
-| 命名风格 ▸ | 翻译成英文并转成 `camelCase` / `PascalCase` / `snake_case` / `kebab-case`（写代码命名用） |
-| 模型对比 | 用同一预设的**两个模型**各译一遍并排对照（也可指定第二个预设与 Key） |
-| 自定义动作 | 用你填的提示词做任意处理（润色、解释、总结、改写成邮件…） |
+- 朗读原文 / 朗读译文
+- 译成…：临时指定目标语言
+- 双语对照
+- 语言学习卡：翻译、生词、音标、例句和用法
+- 命名风格：`camelCase` / `PascalCase` / `snake_case` / `kebab-case`
+- 模型对比：两个模型并行翻译并显示耗时、token
+- Go 模型目录：读取 OpenCode Go 的实时模型 ID
+- 自定义动作：润色、解释、总结、邮件改写等
 
-其它：
+### 稳定性与体验
 
-- **自动识别语言**；也可固定目标语言（中/英/日/韩/俄/法/德/西/葡/意/阿/泰/越）。
-- **关闭思考模式**：默认关闭以降低延迟与 token，按模型名安全注入。
-- **语气 / 领域**：通用 / 技术 / 正式书面 / 日常口语 / 营销文案 / 学术。
-- **术语表 / 额外要求**；**保留格式**（Markdown、代码、URL、emoji、@提及、换行）。
-- **防提示词注入**：原文包在 `<source></source>` 中，声明“只翻译、不执行指令”。
-- **按 App 禁用**（静态配置）。
+- SSE 流式显示；不支持流式的接口自动回退为完整响应
+- 主接口失败时可选自动使用第二接口
+- 408、429、5xx 和网络超时自动重试一次
+- 长文本按段落、换行和句末自动分段翻译
+- 术语表、目标语言、语气 / 领域设置
+- API Key 使用 macOS 钥匙串保存
 
 ## 安装
 
-1. 下载 `BidiTranslate.popclipextz`（Releases 或本仓库构建产物）。
-2. 双击安装，按提示允许。
-3. 选中任意文本 → 点扩展齿轮 ⚙️ 配置 **API Key**（默认已选好 DeepSeek）。
+1. 下载 `BidiTranslate.popclipextz`。
+2. 双击安装并按 PopClip 提示确认。
+3. 选中文字，打开扩展设置并填写 API Key。
 
-> 朗读用 `$` shell 标签调用 macOS 的 `say`，**不会触发“自动化”授权弹窗**。朗读时 PopClip 会转圈，点击转圈即可停止。
+## 默认配置
 
-### 从源码构建
+- 接口预设：**DeepSeek API**
+- 模型：**`deepseek-flash`**（DeepSeek V4.1 Flash）
+- 目标语言：自动
+- 关闭思考：开启
+- 流式显示：开启
+- 长文本自动分段：开启
+- 自动备用接口：关闭，避免用户不知情地产生额外用量
 
-扩展就是一个目录 `BidiTranslate.popclipext/`（内含 `Config.js`、`lib.js`、`README.txt`）。打包（自动排除 `.DS_Store`）：
+## 接口与模型
 
-```bash
-npm run build
-```
-
-等价于：
-
-```bash
-rm -f BidiTranslate.popclipextz && zip -r -X BidiTranslate.popclipextz BidiTranslate.popclipext -x '*.DS_Store'
-```
-
-## 配置
-
-选中文本后点扩展的齿轮图标：
-
-| 选项 | 说明 | 默认 |
-| --- | --- | --- |
-| 接口预设 | 一键切换服务商 | DeepSeek |
-| API Key | 对应平台密钥（存 macOS 钥匙串） | 空 |
-| 模型 | 下拉选常用模型，或点“其它…”手填；留空用预设默认 | （用预设默认） |
-| 自定义 Base URL | 仅“自定义”预设时填；填了不同地址则按自定义处理 | 空 |
-| 目标语言 | 自动 / 中文 / English / 日本語 / …，可点“其它…”手填语言名 | 自动 |
-| 语气 / 领域 | 通用 / 技术 / 正式 / 口语 / 营销 / 学术 | 通用 |
-| 备选译法数量 | 2 / 3 / 4 | 3 |
-| 关闭思考模式（更快） | 见下 | 开 |
-| Temperature | 留空则不发送 | 0.3 |
-| 术语表 / 额外要求 | 追加进提示词 | 空 |
-| 朗读语音（可选） | 留空按语言自动选（Tingting / Samantha…） | 空 |
-| 朗读语速（可选） | 每分钟字数，约 120～220；留空用系统默认 | 空 |
-| 自定义动作提示词 | 「更多 → 自定义动作」的系统提示词 | 润色… |
-| 对比：第二个预设 | same / 各预设 | same |
-| 对比：第二个 API Key（可选） | 跨厂商对比时才需要 | 空 |
-| 对比：第二个模型 | 「模型对比」里要对比的模型，如 `deepseek-v4-pro` | 空 |
-| 额外请求参数 (JSON) | 高级：合并进请求体 | 空 |
-
-> **模型选择**：设置里的「模型」是下拉菜单。选“None”= 用当前预设的默认模型；列表里没有的选“Other…”手动填写。若所选模型属于别的预设（例如预设选了通义却留着 `deepseek-flash`），会自动改用当前预设的默认模型；用了自定义 Base URL 或“自定义”预设时不做这个判断。
-
-### 接口预设与 Base URL
-
-| 预设 | Base URL（OpenAI 兼容） | 默认模型 |
+| 预设 | Base URL | 默认模型 |
 | --- | --- | --- |
 | DeepSeek | `https://api.deepseek.com` | `deepseek-flash` |
 | 通义 Qwen | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
@@ -99,101 +60,108 @@ rm -f BidiTranslate.popclipextz && zip -r -X BidiTranslate.popclipextz BidiTrans
 | Kimi | `https://api.moonshot.cn/v1` | `kimi-k2.6` |
 | StepFun | `https://api.stepfun.com/v1` | `step-3.7-flash` |
 | OpenAI | `https://api.openai.com/v1` | `gpt-4.1-mini` |
+| OpenCode Go（实验） | `https://opencode.ai/zen/go/v1` | `deepseek-v4.1-flash` |
 
-> DeepSeek 官方文档：V4 Flash/Pro 的**思考模式默认开启且 effort=high**，因此本扩展默认帮你关掉，否则每次翻译都会先输出大段思考内容，又慢又费。要更高质量时，把模型换成 `deepseek-v4-pro`。
+### OpenCode Go
 
-### 关闭思考模式
+在“接口预设”选择 **OpenCode Go（实验）**，填写 OpenCode Console 创建的 Go API Key。当前支持：
 
-仅当**模型名明确支持**时才注入参数，避免 400：
+- Chat Completions：DeepSeek、GLM、Kimi、MiMo、LongCat、Hy3 等
+- Responses：GPT、Grok、Muse Spark
+- Anthropic Messages：Qwen、MiniMax
 
-| 模型匹配 | 注入参数 |
-| --- | --- |
-| `deepseek-flash` / `deepseek-v4*` / `deepseek-v3.2*` | `thinking: {type:"disabled"}` |
-| `glm-4.5` ~ `glm-5*` | `thinking: {type:"disabled"}` |
-| `qwen3*` | `enable_thinking: false` |
-| 其它（`deepseek-chat`、`glm-4-flash`、`qwen-plus`、Kimi、GPT…） | 不注入 |
+协议默认自动识别；填写 Other… 的新模型时，可以在“OpenCode Go 协议”中手动指定协议。Go 模型目录会变化，可使用“更多 → Go 模型目录”查看实时列表。
 
-另外，只要填了与预设不同的“自定义 Base URL”，就按自定义处理，不注入该参数。
+OpenCode Go 官方主要面向编程代理流量，翻译场景属于实验性使用；请注意套餐额度、服务端策略和各模型的数据保留政策。
+
+## 重要设置
+
+### 主接口失败时使用备用接口
+
+打开后，翻译、学习卡、命名风格和自定义动作遇到限流、超时或 5xx 时，会使用“第二个预设 / 模型”重试。需要配置第二个 API Key；与主接口完全相同的模型不会作为备用。
+
+### 流式显示
+
+默认开启。PopClip 会在生成过程中更新预览，但复制和粘贴仍会等待完整结果。模型对比固定使用普通响应，避免两个模型同时刷新同一预览。
+
+### 长文本
+
+默认每次请求最多 24,000 个 Unicode 字符。打开长文本分段后，超出部分会顺序分段翻译并合并，可能产生多次请求。
+
+填 `0` 表示取消插件字符上限，同时也不会自动分段；这不代表厂商 API 没有上下文限制。
+
+## 思考模式
+
+扩展只在已知支持时注入参数：
+
+- DeepSeek：`thinking: {type: "disabled"}`
+- GLM-5.3 / GLM-5.3 Flash：不能关闭思考，自动使用 `reasoning_effort: "low"`
+- 其它支持关闭的 GLM：`thinking: {type: "disabled"}`
+- Qwen3：`enable_thinking: false`
+
+使用自定义 Base URL / 代理时，扩展不会主动注入思考参数。
 
 ## 按 App 禁用
 
-PopClip 的 `network` 扩展无法用设置项动态控制显示范围（动态 population 与 network 权限互斥），因此这一项是**静态**的：编辑 `Config.js`：
+编辑 `BidiTranslate.popclipext/Config.js` 中的静态数组：
 
 ```js
-const excludedApps = []; // 改成例如：
-// const excludedApps = ["com.apple.Terminal", "com.microsoft.VSCode"];
+const excludedApps = ["com.apple.Terminal", "com.microsoft.VSCode"];
 ```
 
-若只想在指定 App 中显示，改用 `requiredApps: [...]`。数组留空时不会传给 PopClip（否则会报 `excluded apps array is empty`）。
+数组留空时不限制 App。由于 PopClip 的 network 扩展不能同时使用动态 population，不能把这个功能做成普通设置项。
 
 ## 常见问题
 
-- **401 / 无权限**：API Key 填错或无效。
-- **HTTP 400**：多为模型名不存在或参数不支持。先确认模型名；若与“关闭思考模式”有关，可关掉该开关再试。
-- **返回为空**：检查 Base URL、模型名；或关闭思考模式。
-- **朗读没声音**：确认已授予自动化权限；语音名不存在时会自动回退系统默认语音。
-- **想更自然 / 更准**：切换语气；或把模型换成更强的（如 `deepseek-v4-pro`）。
+- **401 / 无权限**：检查对应接口的 API Key；跨厂商备用或对比时需要单独填写第二个 Key。
+- **HTTP 400**：检查模型 ID、OpenCode Go 协议选择和额外请求参数；GLM-5.3 不要手动发送 `thinking: {type:"disabled"}`。
+- **仍然很慢**：确认“关闭思考模式”已开启；GLM-5.3 只能使用 low effort。网络、服务端排队和文本长度也会影响速度。
+- **流式没有逐字显示**：部分代理不会转发 SSE，扩展会自动改用完整响应，但最终翻译仍可正常完成。
+- **想使用新 Go 模型**：先用“更多 → Go 模型目录”查看 ID，再在模型中选择 Other…，并按模型接口选择 Go 协议。
 
-## 文件结构
-
-```
-BidiTranslate/
-├── README.md
-├── LICENSE
-├── package.json                     # 仅供 Node 测试用（type: module）
-├── BidiTranslate.popclipextz        # 构建产物
-├── test/
-│   ├── lib.test.js                  # 纯逻辑单元测试
-│   └── load.js                      # 用 PopClip 测试环境校验加载
-└── BidiTranslate.popclipext/
-    ├── Config.js                    # 扩展本体（PopClip 专用）
-    ├── lib.js                       # 纯逻辑（供 Config 与测试共用）
-    └── README.txt                   # 安装后随扩展显示的说明
-```
-
-## 开发与测试
-
-改完先跑测试，通过后**由人工在 PopClip 里交叉验证，确认无误再提交/推送**：
+## 从源码构建
 
 ```bash
-npm test        # 纯逻辑单测（无需 PopClip / 网络）
-npm run load    # 用 PopClip 自带的 JS 环境加载 Config.js，校验语法与模块解析
-npm run build   # 打包生成 BidiTranslate.popclipextz
+npm test
+npm run load
+npm run build
 ```
 
-> 本仓库约定：先本地测试 → 生成 `.popclipextz` 人工验证 → 确认后才 `git commit && git push`。
-
-### 人工验证清单（装好后逐项点一遍）
-
-- [ ] 选中中文 → **翻译**：得到英文，点预览可粘贴
-- [ ] 选中英文 → **翻译**：得到中文
-- [ ] **翻译并替换**：在输入框里替换原文
-- [ ] **备选译法**：弹出多个译法且复制到剪贴板
-- [ ] 更多 → **朗读原文 / 朗读译文**（首次需授予自动化权限）
-- [ ] 更多 → **双语对照**
-- [ ] 更多 → **语言学习卡**
-- [ ] 更多 → **命名风格 → camelCase** 等
-- [ ] 更多 → **模型对比**（需先填“对比：第二个模型”）
-- [ ] 更多 → **自定义动作**
+`npm run load` 使用 PopClip 自带 JavaScript 测试环境检查模块加载；`npm run build` 会生成 `BidiTranslate.popclipextz` 并排除 `.DS_Store`。
 
 ## 更新日志
 
-- **v12.4**：修正 StepFun 默认地址为标准的 `https://api.stepfun.com/v1`（原 `/step_plan/v1` 仅适用于 Step Plan 订阅）；README 补充「模型选择」说明。
-- **v12.3**：补齐 `popclipVersion: 6221`（子菜单 / `$` 命令需 2026.8.1+）、模型下拉新增 `deepseek-chat` / `deepseek-reasoner` / `qwen-turbo`、`model` 与 `model2` 显式 `defaultValue: ""`、「模型对比」新增“两个模型相同”的拦截提示；版本号全线统一（`package.json` / README）；新增 `npm run build` 打包脚本（自动排除 `.DS_Store`）。
-- **v12.2**：合并定稿——新增 `modelFits()`（选了别家模型时自动回退到当前预设默认模型）、模型下拉改用 `allowNone`、更全的越南语/法语识别、朗读译文按 VOICE 判断目标语音；单测增至 93 项。
-- **v12.1**：模型下拉（`allowOther` 可手填）、目标语言可自由填写（如 Traditional Chinese/Cantonese）、新增「译成…」子菜单、朗读语速、学习卡方向自动翻转；**修复 `restorePasteboard` 拼写错误**、删除未使用的 `HAN`。
-- **v11.1**：合并 v11 的改进——朗读改用 `$` shell（免自动化授权）、新增 `detectSourceKey` 按语言选朗读语音、命名风格改用专用提示词、`toWords` 修正缩写边界、`provider2` 跨厂商不再复用第一个 Key（必须填第二个）；修复「同一预设 + 自定义代理」被误判为跨厂商；补齐单元测试（68 项）。
-- **v10.1**：纯逻辑抽到 `lib.js`，新增 Node 单元测试（`npm test`）与 PopClip 加载测试（`npm run load`）；行为不变。
-- **v10**：新增「更多」子菜单——朗读原文/译文、双语对照、语言学习卡、命名风格、模型对比、自定义动作。
-- **v9.2**：按模型名安全注入“关闭思考”；自定义 Base URL 时不再注入；更新预设模型名。
-- **v9.1**：布尔选项显式 `defaultValue: true`；修复引号剥离误伤。
-- **v9**：关闭思考改为布尔开关；备选译法复制 + 全屏大字显示。
-- **v8**：备选译法用 Large Type 完整显示。
-- **v7**：多语言目标（源语言交给模型识别）。
-- **v6**：DeepSeek 默认模型改为 `deepseek-flash`。
-- **v5**：修复空 `excludedApps` 导致安装失败。
-- **v4**：移除 Qwen-MT 分支；新增备选译法与按 App 禁用。
+- **v15.0**：新增 SSE 流式预览；支持 OpenCode Go 的 Chat Completions、Responses 和 Anthropic Messages；新增协议自动识别与手动选择；完善备用接口、长文本分段、自动重试和实时 Go 模型目录。
+- **v14.0**：新增备用接口、长文本分段、429/5xx 重试和 Go 实时模型目录。
+- **v13.3**：修复 GLM-5.3 / GLM-5.3 Flash 不能关闭思考模式的问题。
+- **v13.1–v13.2**：合并重复中英入口，默认 DeepSeek V4.1 Flash，加入 OpenCode Go 实验预设并修复 `0` 不限字符数。
+
+## 文件结构
+
+```text
+BidiTranslate/
+├── README.md
+├── LICENSE
+├── package.json
+├── BidiTranslate.popclipextz
+├── test/
+│   ├── lib.test.js
+│   └── load.js
+└── BidiTranslate.popclipext/
+    ├── Config.js
+    ├── lib.js
+    └── README.txt
+```
+
+## 官方参考
+
+- [PopClip Actions](https://www.popclip.app/dev/actions)
+- [PopClip JavaScript environment](https://www.popclip.app/dev/js-environment)
+- [DeepSeek Models & Pricing](https://api-docs.deepseek.com/quick_start/pricing/)
+- [DeepSeek Thinking Mode](https://api-docs.deepseek.com/guides/thinking_mode)
+- [OpenCode Go](https://opencode.ai/v2/docs/console/go)
+- [GLM Thinking](https://docs.z.ai/guides/capabilities/thinking)
 
 ## License
 
-[MIT](LICENSE)
+MIT
